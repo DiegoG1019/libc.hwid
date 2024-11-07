@@ -90,8 +90,8 @@ namespace libc.hwid
 
             var lines = k.Output.Split(separators, StringSplitOptions.RemoveEmptyEntries).Select(a => a.Trim(' ', '\t'));
 
-            var line = lines.First(a => a.StartsWith(find));
-            var res = line.Substring(line.IndexOf(find, StringComparison.Ordinal) + find.Length).Trim(' ', '\t');
+            var line = lines.FirstOrDefault(a => a.StartsWith(find));
+            var res = line?.Substring(line.IndexOf(find, StringComparison.Ordinal) + find.Length).Trim(' ', '\t');
 
             return res;
         }
@@ -133,6 +133,9 @@ namespace libc.hwid
             if (AppInfo.IsLinux)
             {
                 var res = Dmidecode("dmidecode -t 4", "ID");
+                if (string.IsNullOrWhiteSpace(res))
+                    return;
+
                 var parts = res.Split(' ').Reverse();
                 var result = string.Join("", parts);
                 ms.Write(Encoding.UTF8.GetBytes(result), 0, result.Length);
@@ -178,6 +181,8 @@ namespace libc.hwid
             if (AppInfo.IsLinux)
             {
                 var result = Dmidecode("dmidecode -t 2", "Manufacturer");
+                if (string.IsNullOrWhiteSpace(result))
+                    return;
                 ms.Write(Encoding.UTF8.GetBytes(result), 0, result.Length);
             }
             else if (AppInfo.IsWindows)
