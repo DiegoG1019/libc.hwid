@@ -10,10 +10,6 @@ namespace libc.hwid
     /// </summary>
     internal static class AppInfo
     {
-        public static bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        public static bool IsMacOs => RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-        public static bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-
         /// <summary>
         ///     e.g: C:\
         /// </summary>

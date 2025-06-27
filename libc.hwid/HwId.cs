@@ -6,6 +6,7 @@ using System.Linq;
 using System.Management;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 using libc.hwid.Helpers;
@@ -45,6 +46,7 @@ namespace libc.hwid
             }
         }
 
+        [SupportedOSPlatform("windows")]
         private static string Wmi(string wmiClass, string wmiProperty)
         {
             var result = "";
@@ -130,7 +132,7 @@ namespace libc.hwid
 
         private static void GetCpuInfo(MemoryStream ms)
         {
-            if (AppInfo.IsLinux)
+            if (OperatingSystem.IsLinux())
             {
                 var res = Dmidecode("dmidecode -t 4", "ID");
                 if (string.IsNullOrWhiteSpace(res))
@@ -140,7 +142,7 @@ namespace libc.hwid
                 var result = string.Join("", parts);
                 ms.Write(Encoding.UTF8.GetBytes(result), 0, result.Length);
             }
-            else if (AppInfo.IsWindows)
+            else if (OperatingSystem.IsWindows())
             {
                 // We try by asm but fallback with wmi if it fails.
                 var asmCpuId = Asm.GetProcessorId();
@@ -155,7 +157,7 @@ namespace libc.hwid
                     ms.Write(asmCpuId, 0, 4);
                 }
             }
-            else if (AppInfo.IsMacOs)
+            else if (OperatingSystem.IsMacOS())
             {
                 var uuid = GetIoregOutput("IOPlatformUUID");
                 ms.Write(Encoding.UTF8.GetBytes(uuid), 0, uuid.Length);
@@ -178,19 +180,19 @@ namespace libc.hwid
 
         private static void GetMotherboardInfo(MemoryStream ms)
         {
-            if (AppInfo.IsLinux)
+            if (OperatingSystem.IsLinux())
             {
                 var result = Dmidecode("dmidecode -t 2", "Manufacturer");
                 if (string.IsNullOrWhiteSpace(result))
                     return;
                 ms.Write(Encoding.UTF8.GetBytes(result), 0, result.Length);
             }
-            else if (AppInfo.IsWindows)
+            else if (OperatingSystem.IsWindows())
             {
                 var motherboardId = Wmi("Win32_BaseBoard", "Manufacturer");
                 ms.Write(Encoding.UTF8.GetBytes(motherboardId), 0, motherboardId.Length);
             }
-            else if (AppInfo.IsMacOs)
+            else if (OperatingSystem.IsMacOS())
             {
                 var macSerial = GetIoregOutput("IOPlatformSerialNumber");
                 ms.Write(Encoding.UTF8.GetBytes(macSerial), 0, macSerial.Length);
@@ -207,7 +209,7 @@ namespace libc.hwid
             for (int i = 0; i < 256; i++)
             {
                 string s = i.ToString("X2");
-                result[i] = ((uint)s[0]) + ((uint)s[1] << 16);
+                result[i] = s[0] + ((uint)s[1] << 16);
             }
             return result;
         }
